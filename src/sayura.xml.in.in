@@ -1,0 +1,26 @@
+<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<!-- filename: hangul.xml -->
+<component>
+	<name>org.freedesktop.IBus.Sinhala</name>
+	<description>Sinhala Component</description>
+	<exec>${libexecdir}/ibus-engine-sayura --ibus</exec>
+	<version>@VERSION@</version>
+	<author>Pravin Satpute &lt;pravin.d.s@gmail.com&gt;</author>
+	<license>GPL</license>
+	<homepage>http://code.google.com/p/ibus</homepage>
+	<textdomain>ibus-sayura</textdomain>
+
+	<engines>
+		<engine>
+			<name>sinhala</name>
+			<language>si</language>
+			<license>GPL</license>
+			<author>Pravin Satpute &lt;pravin.d.s@gmail.com&gt;</author>
+			<icon>${pkgdatadir}/icons/ibus-sayura.png</icon>
+			<layout>us</layout>
+			<longname>Sinhala</longname>
+			<description>Sayura Input Method</description>
+		</engine>
+	</engines>
+
+</component>
