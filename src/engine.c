@@ -13,8 +13,7 @@ struct _IBusSinhalaEngine {
 	IBusEngine parent;
 
     /* members */
-  GArray *buffer;
-    gboolean sinhala_mode;
+    GArray *buffer;
     gunichar lastkey;
 
     IBusProperty    *sinhala_mode_prop;
@@ -115,32 +114,10 @@ static void ibus_sinhala_engine_focus_out    (IBusEngine             *engine);
 static void ibus_sinhala_engine_reset        (IBusEngine             *engine);
 static void ibus_sinhala_engine_enable       (IBusEngine             *engine);
 static void ibus_sinhala_engine_disable      (IBusEngine             *engine);
-#if 0
-static void ibus_engine_set_cursor_location (IBusEngine             *engine,
-                                             gint                    x,
-                                             gint                    y,
-                                             gint                    w,
-                                             gint                    h);
-static void ibus_hangul_engine_set_capabilities
-                                            (IBusEngine             *engine,
-                                             guint                   caps);
-#endif
 static void ibus_sinhala_engine_page_up      (IBusEngine             *engine);
 static void ibus_sinhala_engine_page_down    (IBusEngine             *engine);
 static void ibus_sinhala_engine_cursor_up    (IBusEngine             *engine);
 static void ibus_sinhala_engine_cursor_down  (IBusEngine             *engine);
-#if 0
-static void ibus_hangul_property_activate   (IBusEngine             *engine,
-                                             const gchar            *prop_name,
-                                             gint                    prop_state);
-static void ibus_hangul_engine_property_show
-											(IBusEngine             *engine,
-                                             const gchar            *prop_name);
-static void ibus_hangul_engine_property_hide
-											(IBusEngine             *engine,
-                                             const gchar            *prop_name);
-#endif
-
 static void ibus_sinhala_engine_flush        (IBusSinhalaEngine       *sinhala);
 static void ibus_sinhala_engine_update_preedit_text
 			(IBusSinhalaEngine       *sinhala);
@@ -150,9 +127,9 @@ static void ibus_sinhala_engine_update_preedit_text
 static int find_consonent_by_key(int k);
 static int find_consonent(gunichar k);
 static int is_consonent(gunichar c);
+static int commit_preedit_to_ibus(IBusSinhalaEngine *sinhala);
 static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala, guint keyval,
 					int c);
-static int commit_to_ibus(IBusSinhalaEngine *sinhala);
 static gboolean handle_vowel_pressed(IBusSinhalaEngine *sinhala, guint keyval,
 					int c);
 
@@ -296,10 +273,9 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
                                       guint           modifiers)
 {
     IBusSinhalaEngine *sinhala = (IBusSinhalaEngine *) engine;
-  const gchar *keyval_name;
   int c;
-  gint val;
- IBusText *text;
+   gint val;
+   IBusText *text;
 
     if (modifiers & IBUS_RELEASE_MASK)
         return FALSE;
@@ -321,7 +297,7 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 
 
     if (keyval == IBUS_space && modifiers == 0 && sinhala->buffer->len >0) {
-	       commit_to_ibus(sinhala);
+	       commit_preedit_to_ibus(sinhala);
 	       return TRUE;
     }
 
@@ -329,9 +305,24 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 	if (c >= 0) /* a consonent is pressed. */
         return handle_consonant_pressed (sinhala, keyval, c);
 
+	c = find_vowel_by_key(keyval);
+	if (c >= 0) /* a consonent is pressed. */
+        return handle_vowel_pressed (sinhala, keyval, c);
 
+	sinhala->lastkey = 0x0;
+	if (keyval < 128) {
+	g_debug("keyval less than i28");
+	g_debug("keyval =%x", keyval);
+		gchar u[2];
+		u[0] = keyval;
+		u[1] = 0;
+	text = ibus_text_new_from_string((gchar *)u);
+	ibus_engine_commit_text ((IBusEngine *)sinhala, text);		
+	g_object_unref(text);
+	return TRUE;
+	}
 
-// other keys will not allowed in preedit
+//	g_debug("print key code %d", keyval);
 
     ibus_sinhala_engine_flush (sinhala);
     return FALSE;
@@ -341,14 +332,19 @@ static void
 ibus_sinhala_engine_flush (IBusSinhalaEngine *sinhala)
 {
     IBusText *text;
+  if(sinhala->buffer->len){
+	commit_preedit_to_ibus(sinhala);
 
+    }
+  else{
 	text = ibus_text_new_from_static_string ("");
 	ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
-
-//    ibus_engine_hide_preedit_text ((IBusEngine *) hangul);
+	g_object_unref (text);
+  }
+    ibus_engine_hide_preedit_text ((IBusEngine *) sinhala);
 //    ibus_engine_commit_text ((IBusEngine *) hangul, text);
 
-    g_object_unref (text);
+
 }
 
 
@@ -384,8 +380,7 @@ ibus_sinhala_engine_reset (IBusEngine *engine)
 	g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);
     }
 
-    ibus_sinhala_engine_flush (sinhala);
-    ibus_engine_hide_lookup_table((IBusEngine *)sinhala);
+    ibus_engine_hide_preedit_text ((IBusEngine *) sinhala);
     parent_class->reset (engine);
 }
 
@@ -501,7 +496,7 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
     /* do modifiers only if there is a valid character before */
     if (l1 >= 0) {
         if (keyval == IBUS_w) {
-		commit_to_ibus(sinhala);
+		commit_preedit_to_ibus(sinhala);
 		val = 0x0dca;
 		g_array_append_val(sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
@@ -513,7 +508,7 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
             /* bandi hal kireema */
 		val = 0x0dca;
 		g_array_append_val(sinhala->buffer, val);
-		commit_to_ibus(sinhala);
+		commit_preedit_to_ibus(sinhala);
 		val = 0x200d;
 		g_array_append_val (sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
@@ -545,7 +540,7 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
 		g_array_append_val (sinhala->buffer, val);
 		val = 0x200d;
 		g_array_append_val (sinhala->buffer, val);
-		commit_to_ibus(sinhala);
+		commit_preedit_to_ibus(sinhala);
 		val = 0x0dbb;
 		g_array_append_val (sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
@@ -559,7 +554,7 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
 		g_array_append_val (sinhala->buffer, val);
 		val = 0x200d;
 		g_array_append_val (sinhala->buffer, val);
-		commit_to_ibus(sinhala);
+		commit_preedit_to_ibus(sinhala);
 		/* yansaya */
 		val = 0x0dba;
 		g_array_append_val (sinhala->buffer, val);
@@ -571,7 +566,7 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
     
 	}
 
-	commit_to_ibus(sinhala);
+	commit_preedit_to_ibus(sinhala);
 
             c1 = find_nopreedit(consonents[c].character);
 		if (c1 >= 0) /* dont preedit. */
@@ -591,7 +586,7 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
     return TRUE;
 }
 
-static int commit_to_ibus(IBusSinhalaEngine *sinhala)
+static int commit_preedit_to_ibus(IBusSinhalaEngine *sinhala)
 {
 	int i;
 	IBusText *text;
@@ -641,7 +636,7 @@ static gboolean handle_vowel_pressed(IBusSinhalaEngine *sinhala,
             c1 = g_array_index(sinhala->buffer, gunichar,0);
 
             if (is_consonent(c1)) {
-	commit_to_ibus(sinhala);
+	commit_preedit_to_ibus(sinhala);
 
 	g_array_append_val(sinhala->buffer, vowels[c].single1);
 	ibus_sinhala_engine_update_preedit_text (sinhala);
@@ -664,7 +659,7 @@ static gboolean handle_vowel_pressed(IBusSinhalaEngine *sinhala,
 		sinhala->lastkey = vowels[c].double1;
             }
             else {
-		commit_to_ibus(sinhala);
+		commit_preedit_to_ibus(sinhala);
 		g_array_append_val(sinhala->buffer, vowels[c].single0);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
 		sinhala->lastkey = vowels[c].single0;
