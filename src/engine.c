@@ -30,8 +30,8 @@ struct {
 	gunichar sagngnaka;
 	int key;
 } consonents[] = {
-	{0xda4, 0x00, 0x00, IBUS_q},
-	{0xda5, 0x00, 0x00, IBUS_Q},
+	{0xda4, 0x00, 0x00, IBUS_z},
+	{0xda5, 0x00, 0x00, IBUS_Z},
 	{0xdc0, 0x00, 0x00, IBUS_w},
 	{0x200c, 0x00, 0x00, IBUS_W},
 	{0xdbb, 0x00, 0x00, IBUS_r},
@@ -82,6 +82,7 @@ struct {
 } vowels[] = {
 	{0xd85, 0xd86, 0xdcf, 0xdcf, IBUS_a},
 	{0xd87, 0xd88, 0xdd0, 0xdd1, IBUS_A},
+	{0xd87, 0xd88, 0xdd0, 0xdd1, IBUS_q},
 	{0xd91, 0xd92, 0xdd9, 0xdda, IBUS_e},
 	{0xd91, 0xd92, 0xdd9, 0xdda, IBUS_E},
 	{0xd89, 0xd8a, 0xdd2, 0xdd3, IBUS_i},
@@ -310,7 +311,8 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
         return handle_vowel_pressed (sinhala, keyval, c);
 
 	sinhala->lastkey = 0x0;
-	if (keyval < 128) {
+
+/*	if (keyval < 128) {
 	g_debug("keyval less than i28");
 	g_debug("keyval =%x", keyval);
 		gchar u[2];
@@ -320,9 +322,7 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 	ibus_engine_commit_text ((IBusEngine *)sinhala, text);		
 	g_object_unref(text);
 	return TRUE;
-	}
-
-//	g_debug("print key code %d", keyval);
+	} */ 
 
     ibus_sinhala_engine_flush (sinhala);
     return FALSE;
@@ -472,7 +472,6 @@ static gboolean handle_consonant_pressed(IBusSinhalaEngine *sinhala,
 	int c1, l1;
 	IBusText *text;
 	gint val;
-//	unsigned char *u = NULL;
     
     if (sinhala->buffer->len == 0) {
         c1 = find_nopreedit(consonents[c].character);
