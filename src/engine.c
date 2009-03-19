@@ -13,7 +13,6 @@ struct _IBusSinhalaEngine {
 
     /* members */
     GArray *buffer;
-    gunichar lastkey;
 
     IBusProperty    *sinhala_mode_prop;
     IBusPropList    *prop_list;
@@ -94,7 +93,8 @@ struct {
 	{0, 0, 0, 0, 0}
 };
 
-gunichar nopreedit[] = {0xda4, 0xda5, 0xdc0 ,0xdbb , 0xdba, 0xdc6,  0xdbd, 0xdc5, 0xd82, 0xd9e, 0xdb8, 0xdb9};
+//gunichar nopreedit[] = {0xda4, 0xda5, 0xdc0 ,0xdbb , 0xdba, 0xdc6,  0xdbd, 0xdc5, 0xd82, 0xd9e, 0xdb8, 0xdb9};
+
 
 /* functions prototype */
 static void	ibus_sinhala_engine_class_init   (IBusSinhalaEngineClass  *klass);
@@ -206,7 +206,6 @@ ibus_sinhala_engine_init (IBusSinhalaEngine *sinhala)
 
     sinhala->prop_list = ibus_prop_list_new ();
     ibus_prop_list_append (sinhala->prop_list,  sinhala->sinhala_mode_prop);
-  sinhala->lastkey= 0x0;
   sinhala->buffer = g_array_new (TRUE, TRUE, sizeof(gunichar *));
 }
 
@@ -288,8 +287,10 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
         return FALSE;
 
     if ((keyval == IBUS_BackSpace) && (modifiers==0) && (sinhala->buffer->len!=0)) {
-	g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
-	ibus_sinhala_engine_update_preedit_text (sinhala);
+	if(sinhala->buffer){
+		g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
+		ibus_sinhala_engine_update_preedit_text (sinhala);
+	}
         return TRUE;
     }
 
@@ -302,13 +303,12 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 
 	c = ibus_sinhala_ibus_sinhala_find_consonent_by_key(keyval);
 	if (c >= 0) /* a consonent is pressed. */
-        return ibus_sinhala_handle_consonant_pressed (sinhala, keyval, c);
+		return ibus_sinhala_handle_consonant_pressed (sinhala, keyval, c);
 
 	c = ibus_sinhala_find_vowel_by_key(keyval);
 	if (c >= 0) /* a consonent is pressed. */
-        return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
+        	return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
 
-	sinhala->lastkey = 0x0;
 
 /*	if (keyval < 128) {
 	g_debug("keyval less than i28");
@@ -322,7 +322,7 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 	return TRUE;
 	} */ 
 
-    ibus_sinhala_engine_flush (sinhala);
+//    ibus_sinhala_engine_flush (sinhala);
     return FALSE;
 }
 
@@ -374,7 +374,7 @@ static void
 ibus_sinhala_engine_reset (IBusEngine *engine)
 {
     IBusSinhalaEngine *sinhala = (IBusSinhalaEngine *) engine;
-    if(sinhala->buffer->len){
+    if(sinhala->buffer){
 	g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);
     }
 
@@ -445,15 +445,6 @@ static int ibus_sinhala_is_consonent(gunichar c)
     return (c >= 0x0d9a) && (c <= 0x0dc6) ? 1 : 0;
 }
 
-int find_nopreedit(gunichar c)
-{
-	int i = -1;
-	while (nopreedit[++i])
-		if (nopreedit[i]== c)
-			return i;
-	return -1;
-}
-
 int ibus_sinhala_find_vowel_by_key(gunichar k)
 {
 	int i = -1;
@@ -467,25 +458,14 @@ static gboolean ibus_sinhala_handle_consonant_pressed(IBusSinhalaEngine *sinhala
 		                                      guint keyval,
 					int c)
 {
-	int c1, l1;
-	IBusText *text;
+	int  l1;
 	gint val;
     
     if (sinhala->buffer->len == 0) {
-        c1 = find_nopreedit(consonents[c].character);
-	if (c1 >= 0) /* dont preedit. */
-	{
-		text = ibus_text_new_from_unichar(consonents[c].character);
-		ibus_engine_commit_text ((IBusEngine *)sinhala, text);
-		g_object_unref(text);
-                	sinhala->lastkey = consonents[c].character;
-        	return TRUE;
-	}
-	else {
+
 		g_array_append_val(sinhala->buffer, consonents[c].character);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
 	        return TRUE;
-	}
     }
     
     /* do modifiers first. */
@@ -493,11 +473,10 @@ static gboolean ibus_sinhala_handle_consonant_pressed(IBusSinhalaEngine *sinhala
     /* do modifiers only if there is a valid character before */
     if (l1 >= 0) {
         if (keyval == IBUS_w) {
-		ibus_sinhala_commit_preedit_to_ibus(sinhala);
+//		ibus_sinhala_commit_preedit_to_ibus(sinhala);
 		val = 0x0dca;
 		g_array_append_val(sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
-		sinhala->lastkey = 0xdca;
         	return TRUE;
 	}
 
@@ -509,26 +488,25 @@ static gboolean ibus_sinhala_handle_consonant_pressed(IBusSinhalaEngine *sinhala
 		val = 0x200d;
 		g_array_append_val (sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
-		sinhala->lastkey = 0x200d;
 
 		return TRUE;
 	}
 
         if ((keyval == IBUS_H) && (consonents[l1].mahaprana)) {
-		g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
-		g_array_append_val (sinhala->buffer, consonents[l1].mahaprana);
-		ibus_sinhala_engine_update_preedit_text (sinhala);
-		sinhala->lastkey = consonents[l1].mahaprana;
-
+		if(sinhala->buffer){
+			g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
+			g_array_append_val (sinhala->buffer, consonents[l1].mahaprana);
+			ibus_sinhala_engine_update_preedit_text (sinhala);
+		}
 		return TRUE;
 	}
         
 	if ((keyval == IBUS_G) && (consonents[l1].sagngnaka)) {
-		g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
-		g_array_append_val (sinhala->buffer, consonents[l1].sagngnaka);
-		ibus_sinhala_engine_update_preedit_text (sinhala);
-
-		sinhala->lastkey = consonents[l1].sagngnaka;
+		if(sinhala->buffer){
+			g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
+			g_array_append_val (sinhala->buffer, consonents[l1].sagngnaka);
+			ibus_sinhala_engine_update_preedit_text (sinhala);
+		}
 		return TRUE;
 	}
 
@@ -541,45 +519,28 @@ static gboolean ibus_sinhala_handle_consonant_pressed(IBusSinhalaEngine *sinhala
 		val = 0x0dbb;
 		g_array_append_val (sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
-
-		sinhala->lastkey = 0x0dbb;
 		return TRUE;
 	}
 
         if (keyval == IBUS_Y) {
+		/* yansaya */
 		val = 0x0dca;
 		g_array_append_val (sinhala->buffer, val);
 		val = 0x200d;
 		g_array_append_val (sinhala->buffer, val);
 		ibus_sinhala_commit_preedit_to_ibus(sinhala);
-		/* yansaya */
 		val = 0x0dba;
 		g_array_append_val (sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
-
-		sinhala->lastkey = 0x0dba;
 		return TRUE;
 	}
     
 	}
 
 	ibus_sinhala_commit_preedit_to_ibus(sinhala);
+	g_array_append_val (sinhala->buffer, consonents[c].character);
+	ibus_sinhala_engine_update_preedit_text (sinhala);
 
-            c1 = find_nopreedit(consonents[c].character);
-		if (c1 >= 0) /* dont preedit. */
-		{
-			text = ibus_text_new_from_unichar(consonents[c].character);
-			ibus_engine_commit_text ((IBusEngine *)sinhala, text);
-			g_object_unref(text);
-	
-			sinhala->lastkey = consonents[c].character;
-			return TRUE;
-		}
-		else 
-			g_array_append_val (sinhala->buffer, consonents[c].character);
-			ibus_sinhala_engine_update_preedit_text (sinhala);
-
-		sinhala->lastkey = consonents[c].character;
     return TRUE;
 }
 
@@ -587,15 +548,16 @@ static int ibus_sinhala_commit_preedit_to_ibus(IBusSinhalaEngine *sinhala)
 {
 	int i;
 	IBusText *text;
-	if(sinhala->buffer->len){
+	if(sinhala->buffer){
 		for(i=0; i<sinhala->buffer->len; i++){
 			text = ibus_text_new_from_unichar(g_array_index(sinhala->buffer, gunichar,i));
 			ibus_engine_commit_text ((IBusEngine *)sinhala, text);		
 			g_object_unref(text);
 		}
-
-		g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);
-		ibus_sinhala_engine_update_preedit_text(sinhala);
+		if(sinhala->buffer){
+			g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);
+			ibus_sinhala_engine_update_preedit_text(sinhala);
+		}
 	}
 	
 	return sinhala->buffer->len;
@@ -606,63 +568,51 @@ static gboolean ibus_sinhala_handle_vowel_pressed(IBusSinhalaEngine *sinhala,
 		                                      guint keyval,
 					int c)
 {
-	int c1, l2;
-
-            l2 = find_nopreedit(sinhala->lastkey);
-
+	int c1;
+	gint val;
 
         if (sinhala->buffer->len == 0) {
-     
-	if(l2 >= 0){
-		g_array_append_val(sinhala->buffer, vowels[c].single1);
-		ibus_sinhala_engine_update_preedit_text (sinhala);
-		sinhala->lastkey = vowels[c].single1;
-		return TRUE;
-                   }
-
-	ibus_engine_show_preedit_text ((IBusEngine *)sinhala);
-	g_array_append_val(sinhala->buffer, vowels[c].single0);
-	ibus_sinhala_engine_update_preedit_text (sinhala);
-        return TRUE;
-         }
-        
-        
-        else { 
-
-            /* look for a previous character first. */
-            c1 = g_array_index(sinhala->buffer, gunichar,0);
-
-            if (ibus_sinhala_is_consonent(c1)) {
-	ibus_sinhala_commit_preedit_to_ibus(sinhala);
-
-	g_array_append_val(sinhala->buffer, vowels[c].single1);
-	ibus_sinhala_engine_update_preedit_text (sinhala);
-	sinhala->lastkey = vowels[c].single1;
-            }
-
-            else if (c1 == vowels[c].single0) {
-		g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
-		g_array_append_val(sinhala->buffer, vowels[c].double0);
-		ibus_sinhala_engine_update_preedit_text (sinhala);
-
-		sinhala->lastkey = vowels[c].double0;
-             }
-            else if (c1 == vowels[c].single1) {
-
-		g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
-		g_array_append_val(sinhala->buffer, vowels[c].double1);
-		ibus_sinhala_engine_update_preedit_text (sinhala);
-
-		sinhala->lastkey = vowels[c].double1;
-            }
-            else {
-		ibus_sinhala_commit_preedit_to_ibus(sinhala);
+		ibus_engine_show_preedit_text ((IBusEngine *)sinhala);
 		g_array_append_val(sinhala->buffer, vowels[c].single0);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
-		sinhala->lastkey = vowels[c].single0;
-    }
+        	return TRUE;
+	}        
+        else { 
+            /* look for a previous character first. */
+		c1 = g_array_index(sinhala->buffer, gunichar,0);
+
+		if (ibus_sinhala_is_consonent(c1)) {
+			g_array_append_val(sinhala->buffer, vowels[c].single1);
+			ibus_sinhala_engine_update_preedit_text (sinhala);
+			return TRUE;
+            		}
+		else if (c1 == vowels[c].single0) {
+			if(sinhala->buffer){
+				g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
+				g_array_append_val(sinhala->buffer, vowels[c].double0);
+				ibus_sinhala_engine_update_preedit_text (sinhala);
+				return TRUE;
+			}
+
+		}
+		else if (c1 == vowels[c].single1) {
+			if(sinhala->buffer){
+				g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
+				g_array_append_val(sinhala->buffer, vowels[c].double1);
+				ibus_sinhala_engine_update_preedit_text (sinhala);
+				return TRUE;
+			}
+
+		}
+		else if(((c1 == 0x0d86) || (c1 == 0x0d87)) && (c == 0x0)){
+			g_array_remove_index(sinhala->buffer, (sinhala->buffer->len)-1);
+			val = vowels[c].single0+1;
+			g_array_append_val(sinhala->buffer, val );
+			ibus_sinhala_engine_update_preedit_text (sinhala);
+			return TRUE;
+		}
 
 
-    return TRUE;
-       }
+	return TRUE;
+       	}
 }
