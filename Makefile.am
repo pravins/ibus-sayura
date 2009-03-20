@@ -29,7 +29,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = \
 	autogen.sh \
-	ibus-rawcode.spec.in \
+	ibus-sayura.spec.in \
 	$(NULL)
 
 noinst_DIST = \
