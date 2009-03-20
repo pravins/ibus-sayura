@@ -45,23 +45,23 @@ start_component (void)
                                     N_("Sinhala input method"),
                                     "0.1.0",
                                     "GPL",
-                                    "Peng Huang <shawn.p.huang@gmail.com>",
+                                    "Pravin Satpute <pravin.d.s@gmail.com>",
                                     "http://code.google.com/p/ibus/",
                                     "",
-                                    "ibus-rawcode");
+                                    "ibus-sayura");
     ibus_component_add_engine (component,
-                               ibus_engine_desc_new ("rawcode",
+                               ibus_engine_desc_new ("sayura",
                                                      N_("Sinhala Input Method"),
                                                      N_("Sinhala Input Method"),
-                                                     "other",
+                                                     "si",
                                                      "GPL",
                                                      "Pravin Satpute <pravin.d.s@gmail.com>",
-                                                     PKGDATADIR"/icon/ibus-hangul.svg",
+                                                     PKGDATADIR"/icon/ibus-sayura.png",
                                                      "us"));
 
     factory = ibus_factory_new (ibus_bus_get_connection (bus));
 
-    ibus_factory_add_engine (factory, "rawcode", IBUS_TYPE_SINHALA_ENGINE);
+    ibus_factory_add_engine (factory, "sayura", IBUS_TYPE_SINHALA_ENGINE);
 
     if (ibus) {
         ibus_bus_request_name (bus, "org.freedesktop.IBus.Sinhala", 0);
@@ -83,9 +83,9 @@ main (gint argc, gchar **argv)
 
     setlocale (LC_ALL, "");
 
-    context = g_option_context_new ("- ibus rawcode engine component");
+    context = g_option_context_new ("- ibus sayura engine component");
 
-    g_option_context_add_main_entries (context, entries, "ibus-rawcode");
+    g_option_context_add_main_entries (context, entries, "ibus-sayura");
 
     if (!g_option_context_parse (context, &argc, &argv, &error)) {
         g_print ("Option parsing failed: %s\n", error->message);

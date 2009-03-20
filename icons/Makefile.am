@@ -1,6 +1,6 @@
 # vim:set noet ts=4:
 #
-# ibus-hangul - The Hangul engine for IBus
+# ibus-sayrua - The Sayura engine for IBus
 #
 # Copyright (c) 2007-2008 Huang Peng <shawn.p.huang@gmail.com>
 #
