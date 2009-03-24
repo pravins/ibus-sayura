@@ -249,22 +249,25 @@ static void
 ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
 {
     IBusText *text;
+    static gunichar *uni_array;
 
-	if(sinhala->buffer->len>0){
-				text = ibus_text_new_from_unichar(g_array_index(sinhala->buffer, gunichar, 0));
-				ibus_text_append_attribute (text, IBUS_ATTR_TYPE_FOREGROUND, 0x00ffffff, 0, -1);
-				ibus_text_append_attribute (text, IBUS_ATTR_TYPE_BACKGROUND, 0x00000000, 0, -1);
-				ibus_engine_update_preedit_text ((IBusEngine *)sinhala,
-						                                         text,
-						                                         ibus_text_get_length (text),
-				                                         TRUE);
-			                      g_object_unref (text);
-		}
-	      else {
-		        text = ibus_text_new_from_static_string ("");
-		        ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
-		        g_object_unref (text);
-		    } 
+    if(sinhala->buffer->len>0){
+        uni_array = (gunichar *)sinhala->buffer->data;
+//        text = ibus_text_new_from_unichar(g_array_index(sinhala->buffer, gunichar, 0));
+        text = ibus_text_new_from_ucs4(uni_array);
+        ibus_text_append_attribute (text, IBUS_ATTR_TYPE_FOREGROUND, 0x00ffffff, 0, -1);
+	ibus_text_append_attribute (text, IBUS_ATTR_TYPE_BACKGROUND, 0x00000000, 0, -1);
+	ibus_engine_update_preedit_text ((IBusEngine *)sinhala,
+	    	                                         text,
+		                                         ibus_text_get_length (text),
+	    	                                         TRUE);
+         g_object_unref (text);
+    }
+    else{
+        text = ibus_text_new_from_static_string ("");
+        ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
+        g_object_unref (text);
+	} 
 }
 
 static gboolean
@@ -309,20 +312,6 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 	if (c >= 0) /* a consonent is pressed. */
         	return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
 
-
-/*	if (keyval < 128) {
-	g_debug("keyval less than i28");
-	g_debug("keyval =%x", keyval);
-		gchar u[2];
-		u[0] = keyval;
-		u[1] = 0;
-	text = ibus_text_new_from_string((gchar *)u);
-	ibus_engine_commit_text ((IBusEngine *)sinhala, text);		
-	g_object_unref(text);
-	return TRUE;
-	} */ 
-
-//    ibus_sinhala_engine_flush (sinhala);
     return FALSE;
 }
 
@@ -374,7 +363,7 @@ static void
 ibus_sinhala_engine_reset (IBusEngine *engine)
 {
     IBusSinhalaEngine *sinhala = (IBusSinhalaEngine *) engine;
-    if(sinhala->buffer){
+    if(sinhala->buffer->len > 0 ){
 	g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);
     }
 
@@ -554,7 +543,7 @@ static int ibus_sinhala_commit_preedit_to_ibus(IBusSinhalaEngine *sinhala)
 			ibus_engine_commit_text ((IBusEngine *)sinhala, text);		
 			g_object_unref(text);
 		}
-		if(sinhala->buffer){
+		if(sinhala->buffer->len > 0){
 			g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);
 			ibus_sinhala_engine_update_preedit_text(sinhala);
 		}
