@@ -297,7 +297,7 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 
 
     if (keyval == IBUS_space && modifiers == 0 && sinhala->buffer->len >0) {
-        bus_sinhala_commit_preedit_to_ibus(sinhala);
+        ibus_sinhala_commit_preedit_to_ibus(sinhala);
         return TRUE;
     }
 
