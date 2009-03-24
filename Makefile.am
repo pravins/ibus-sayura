@@ -1,6 +1,6 @@
 # vim:set noet ts=4:
 #
-# ibus-rawcode - The Rawcode engine for IBus
+# ibus-sayura - The Sinhala engine for IBus
 #
 # Copyright (c) 2007-2008 Huang Peng <shawn.p.huang@gmail.com>
 #
