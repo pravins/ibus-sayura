@@ -93,8 +93,6 @@ struct {
 	{0, 0, 0, 0, 0}
 };
 
-//gunichar nopreedit[] = {0xda4, 0xda5, 0xdc0 ,0xdbb , 0xdba, 0xdc6,  0xdbd, 0xdc5, 0xd82, 0xd9e, 0xdb8, 0xdb9};
-
 
 /* functions prototype */
 static void	ibus_sinhala_engine_class_init   (IBusSinhalaEngineClass  *klass);
@@ -124,7 +122,7 @@ static void ibus_sinhala_engine_update_preedit_text
 
 //sinhala functions
 
-static int ibus_sinhala_ibus_sinhala_find_consonent_by_key(int k);
+static int ibus_sinhala_find_consonent_by_key(int k);
 static int ibus_sinhala_find_vowel_by_key(gunichar k);
 static int ibus_sinhala_find_consonent(gunichar k);
 static int ibus_sinhala_is_consonent(gunichar c);
@@ -206,7 +204,7 @@ ibus_sinhala_engine_init (IBusSinhalaEngine *sinhala)
 
     sinhala->prop_list = ibus_prop_list_new ();
     ibus_prop_list_append (sinhala->prop_list,  sinhala->sinhala_mode_prop);
-  sinhala->buffer = g_array_new (TRUE, TRUE, sizeof(gunichar *));
+    sinhala->buffer = g_array_new (TRUE, TRUE, sizeof(gunichar *));
 }
 
 static GObject*
@@ -242,7 +240,7 @@ ibus_sinhala_engine_destroy (IBusSinhalaEngine *sinhala)
         sinhala->buffer = NULL;
     }
 
-	IBUS_OBJECT_CLASS (parent_class)->destroy ((IBusObject *)sinhala);
+    IBUS_OBJECT_CLASS (parent_class)->destroy ((IBusObject *)sinhala);
 }
 
 static void
@@ -253,7 +251,6 @@ ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
 
     if(sinhala->buffer->len>0){
         uni_array = (gunichar *)sinhala->buffer->data;
-//        text = ibus_text_new_from_unichar(g_array_index(sinhala->buffer, gunichar, 0));
         text = ibus_text_new_from_ucs4(uni_array);
         ibus_text_append_attribute (text, IBUS_ATTR_TYPE_FOREGROUND, 0x00ffffff, 0, -1);
 	ibus_text_append_attribute (text, IBUS_ATTR_TYPE_BACKGROUND, 0x00000000, 0, -1);
@@ -267,7 +264,7 @@ ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
         text = ibus_text_new_from_static_string ("");
         ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
         g_object_unref (text);
-	} 
+    } 
 }
 
 static gboolean
@@ -276,7 +273,7 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
                                       guint           modifiers)
 {
     IBusSinhalaEngine *sinhala = (IBusSinhalaEngine *) engine;
-  int c;
+    int c;
 
     if (modifiers & IBUS_RELEASE_MASK)
         return FALSE;
@@ -300,17 +297,17 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
 
 
     if (keyval == IBUS_space && modifiers == 0 && sinhala->buffer->len >0) {
-	       ibus_sinhala_commit_preedit_to_ibus(sinhala);
-	       return TRUE;
+        bus_sinhala_commit_preedit_to_ibus(sinhala);
+        return TRUE;
     }
 
-	c = ibus_sinhala_ibus_sinhala_find_consonent_by_key(keyval);
-	if (c >= 0) /* a consonent is pressed. */
-		return ibus_sinhala_handle_consonant_pressed (sinhala, keyval, c);
+    c = ibus_sinhala_find_consonent_by_key(keyval);
+    if (c >= 0) /* a consonent is pressed. */
+    	return ibus_sinhala_handle_consonant_pressed (sinhala, keyval, c);
 
-	c = ibus_sinhala_find_vowel_by_key(keyval);
-	if (c >= 0) /* a consonent is pressed. */
-        	return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
+    c = ibus_sinhala_find_vowel_by_key(keyval);
+    if (c >= 0) /* a consonent is pressed. */
+        return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
 
     return FALSE;
 }
@@ -319,17 +316,16 @@ static void
 ibus_sinhala_engine_flush (IBusSinhalaEngine *sinhala)
 {
     IBusText *text;
-  if(sinhala->buffer->len){
+    if(sinhala->buffer->len){
 	ibus_sinhala_commit_preedit_to_ibus(sinhala);
 
     }
-  else{
+    else{
 	text = ibus_text_new_from_static_string ("");
 	ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
 	g_object_unref (text);
-  }
+    }
     ibus_engine_hide_preedit_text ((IBusEngine *) sinhala);
-//    ibus_engine_commit_text ((IBusEngine *) hangul, text);
 
 
 }
@@ -343,9 +339,10 @@ ibus_sinhala_engine_focus_in (IBusEngine *engine)
     ibus_engine_register_properties (engine, sinhala->prop_list);
 
     parent_class->focus_in (engine);
-  if(sinhala->buffer->len){
+
+    if(sinhala->buffer->len){
         ibus_sinhala_engine_update_preedit_text (sinhala);
-  }
+    }
   
 }
 
@@ -409,24 +406,24 @@ ibus_sinhala_engine_cursor_down (IBusEngine *engine)
 }
 
 // Sinhala Related Functions
-static int ibus_sinhala_ibus_sinhala_find_consonent_by_key(int k)
+static int ibus_sinhala_find_consonent_by_key(int k)
 {
-   	int i = -1;
-	while (consonents[++i].character)
-		if (consonents[i].key == k)
-		    return i;
-	return -1;
+    int i = -1;
+    while (consonents[++i].character)
+    	if (consonents[i].key == k)
+	    return i;
+    return -1;
 }
 
 static int ibus_sinhala_find_consonent(gunichar c)
 {
-	int i = -1;
-	while (consonents[++i].character)
-		if ((consonents[i].character == c)
+    int i = -1;
+    while (consonents[++i].character)
+	if ((consonents[i].character == c)
             || (consonents[i].mahaprana == c)
             || (consonents[i].sagngnaka == c))
-			return i;
-	return -1;
+	    return i;
+    return -1;
 }
 
 static int ibus_sinhala_is_consonent(gunichar c)
@@ -436,25 +433,25 @@ static int ibus_sinhala_is_consonent(gunichar c)
 
 int ibus_sinhala_find_vowel_by_key(gunichar k)
 {
-	int i = -1;
-	while (vowels[++i].single0)
-		if (vowels[i].key == k)
-			return i;
-	return -1;
+    int i = -1;
+    while (vowels[++i].single0)
+	if (vowels[i].key == k)
+	    return i;
+    return -1;
 }
 
 static gboolean ibus_sinhala_handle_consonant_pressed(IBusSinhalaEngine *sinhala,
 		                                      guint keyval,
 					int c)
 {
-	int  l1;
-	gint val;
+    int  l1;
+    gint val;
     
     if (sinhala->buffer->len == 0) {
 
-		g_array_append_val(sinhala->buffer, consonents[c].character);
-		ibus_sinhala_engine_update_preedit_text (sinhala);
-	        return TRUE;
+	g_array_append_val(sinhala->buffer, consonents[c].character);
+	ibus_sinhala_engine_update_preedit_text (sinhala);
+	return TRUE;
     }
     
     /* do modifiers first. */
@@ -462,7 +459,6 @@ static gboolean ibus_sinhala_handle_consonant_pressed(IBusSinhalaEngine *sinhala
     /* do modifiers only if there is a valid character before */
     if (l1 >= 0) {
         if (keyval == IBUS_w) {
-//		ibus_sinhala_commit_preedit_to_ibus(sinhala);
 		val = 0x0dca;
 		g_array_append_val(sinhala->buffer, val);
 		ibus_sinhala_engine_update_preedit_text (sinhala);
