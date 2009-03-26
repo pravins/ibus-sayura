@@ -1,6 +1,6 @@
 Name:       @PACKAGE_NAME@
 Version:    @PACKAGE_VERSION@
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    The Sinhala engine for IBus input platform
 License:    GPLv2+
 Group:      System Environment/Libraries
@@ -29,8 +29,7 @@ make %{?_smp_mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make DESTDIR=${RPM_BUILD_ROOT} install
-rm -f $RPM_BUILD_ROOT%{python_sitearch}/_sayura.la
+make install DESTDIR=$RPM_BUILD_ROOT INSTALL="install -p"
 
 %find_lang %{name}
 
@@ -45,5 +44,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ibus/component/*
 
 %changelog
+* Thu Mar 26 2009 Pravin Satpute <pravin.d.s@gmail.com> - @VERSON@-2
+- updated as per fedora spec review
+
 * Fri Mar 20 2009 Pravin Satpute <pravin.d.s@gmail.com> - @VERSION@-1
 - The first version.
