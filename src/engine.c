@@ -252,8 +252,8 @@ ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
     if(sinhala->buffer->len>0){
         uni_array = (gunichar *)sinhala->buffer->data;
         text = ibus_text_new_from_ucs4(uni_array);
-        ibus_text_append_attribute (text, IBUS_ATTR_TYPE_FOREGROUND, 0x00ffffff, 0, -1);
-	ibus_text_append_attribute (text, IBUS_ATTR_TYPE_BACKGROUND, 0x00000000, 0, -1);
+//        ibus_text_append_attribute (text, IBUS_ATTR_TYPE_FOREGROUND, 0x00ffffff, 0, -1);
+//	ibus_text_append_attribute (text, IBUS_ATTR_TYPE_BACKGROUND, 0x00000000, 0, -1);
 	ibus_engine_update_preedit_text ((IBusEngine *)sinhala,
 	    	                                         text,
 		                                         ibus_text_get_length (text),
