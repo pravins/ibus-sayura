@@ -564,7 +564,7 @@ static gboolean ibus_sinhala_handle_vowel_pressed(IBusSinhalaEngine *sinhala,
 	}        
         else { 
             /* look for a previous character first. */
-		c1 = g_array_index(sinhala->buffer, gunichar,0);
+		c1 = g_array_index(sinhala->buffer, gunichar,(sinhala->buffer->len-1));
 
 		if (ibus_sinhala_is_consonent(c1)) {
 			g_array_append_val(sinhala->buffer, vowels[c].single1);
