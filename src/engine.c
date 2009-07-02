@@ -252,7 +252,7 @@ ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
     if(sinhala->buffer->len>0){
         uni_array = (gunichar *)sinhala->buffer->data;
         text = ibus_text_new_from_ucs4(uni_array);
-//        ibus_text_append_attribute (text, IBUS_ATTR_TYPE_FOREGROUND, 0x00ffffff, 0, -1);
+        ibus_text_append_attribute (text, IBUS_ATTR_TYPE_UNDERLINE, 1, 0, -1);
 //	ibus_text_append_attribute (text, IBUS_ATTR_TYPE_BACKGROUND, 0x00000000, 0, -1);
 	ibus_engine_update_preedit_text ((IBusEngine *)sinhala,
 	    	                                         text,
@@ -295,10 +295,9 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
     }
 
 
-
     if (keyval == IBUS_space && modifiers == 0 && sinhala->buffer->len >0) {
         ibus_sinhala_commit_preedit_to_ibus(sinhala);
-        return TRUE;
+        return FALSE;
     }
 
     c = ibus_sinhala_find_consonent_by_key(keyval);
@@ -308,6 +307,13 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
     c = ibus_sinhala_find_vowel_by_key(keyval);
     if (c >= 0) /* a consonent is pressed. */
         return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
+
+    if (keyval == IBUS_Shift_L || keyval == IBUS_Shift_L ) {
+        return FALSE;
+    }
+
+    if (sinhala->buffer->len >0)
+	        ibus_sinhala_commit_preedit_to_ibus(sinhala);
 
     return FALSE;
 }
