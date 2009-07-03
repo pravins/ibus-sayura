@@ -106,6 +106,7 @@ static gboolean
 			ibus_sinhala_engine_process_key_event
                                             (IBusEngine             *engine,
                                              guint               	 keyval,
+                                             guint               	 keycode,
                                              guint               	 modifiers);
 static void ibus_sinhala_engine_focus_in     (IBusEngine             *engine);
 static void ibus_sinhala_engine_focus_out    (IBusEngine             *engine);
@@ -270,6 +271,7 @@ ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
 static gboolean
 ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
                                       guint           keyval,
+                                      guint               	 keycode,
                                       guint           modifiers)
 {
     IBusSinhalaEngine *sinhala = (IBusSinhalaEngine *) engine;
