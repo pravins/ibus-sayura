@@ -1,11 +1,11 @@
 Name:       @PACKAGE_NAME@
 Version:    @PACKAGE_VERSION@
-Release:    2%{?dist}
+Release:    1%{?dist}
 Summary:    The Sinhala engine for IBus input platform
 License:    GPLv2+
 Group:      System Environment/Libraries
-URL:        http://github.com/pravins/ibus-sayura/tree/master
-Source0:    http://pravins.fedorapeople.org/ibus-sayura/%{name}-%{version}.tar.gz
+URL:        https://fedorahosted.org/ibus-sayura
+Source0:    https://fedorahosted.org/releases/i/b/ibus-sayura/%{name}-%{version}.tar.gz
 
 BuildRoot:  %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -44,6 +44,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ibus/component/*
 
 %changelog
+* Tue Feb 09 2010 Pravin Satpute <pravin.d.s@gmail.com> - @VERSION@-1
+- updated patches for code enhancements from phuang for ibus-1.2.99
+
 * Thu Mar 26 2009 Pravin Satpute <pravin.d.s@gmail.com> - @VERSON@-2
 - updated as per fedora spec review
 

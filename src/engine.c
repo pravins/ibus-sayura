@@ -202,8 +202,10 @@ ibus_sinhala_engine_init (IBusSinhalaEngine *sinhala)
                                            FALSE,
                                            0,
                                            NULL);
+    g_object_ref_sink (sinhala->sinhala_mode_prop);
 
     sinhala->prop_list = ibus_prop_list_new ();
+    g_object_ref_sink (sinhala->prop_list);
     ibus_prop_list_append (sinhala->prop_list,  sinhala->sinhala_mode_prop);
     sinhala->buffer = g_array_new (TRUE, TRUE, sizeof(gunichar *));
 }
@@ -236,8 +238,8 @@ ibus_sinhala_engine_destroy (IBusSinhalaEngine *sinhala)
         sinhala->sinhala_mode_prop = NULL;
     }
 
-    if (sinhala->buffer->len) {
-        g_object_unref (sinhala->buffer);
+    if (sinhala->buffer) {
+        g_array_free (sinhala->buffer, TRUE);
         sinhala->buffer = NULL;
     }
 
@@ -259,12 +261,10 @@ ibus_sinhala_engine_update_preedit_text (IBusSinhalaEngine *sinhala)
 	    	                                         text,
 		                                         ibus_text_get_length (text),
 	    	                                         TRUE);
-         g_object_unref (text);
     }
     else{
         text = ibus_text_new_from_static_string ("");
         ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
-        g_object_unref (text);
     } 
 }
 
@@ -331,7 +331,6 @@ ibus_sinhala_engine_flush (IBusSinhalaEngine *sinhala)
     else{
 	text = ibus_text_new_from_static_string ("");
 	ibus_engine_update_preedit_text ((IBusEngine *)sinhala, text, 0, FALSE);
-	g_object_unref (text);
     }
     ibus_engine_hide_preedit_text ((IBusEngine *) sinhala);
 
@@ -545,7 +544,6 @@ static int ibus_sinhala_commit_preedit_to_ibus(IBusSinhalaEngine *sinhala)
 		for(i=0; i<sinhala->buffer->len; i++){
 			text = ibus_text_new_from_unichar(g_array_index(sinhala->buffer, gunichar,i));
 			ibus_engine_commit_text ((IBusEngine *)sinhala, text);		
-			g_object_unref(text);
 		}
 		if(sinhala->buffer->len > 0){
 			g_array_remove_range(sinhala->buffer, 0, sinhala->buffer->len);

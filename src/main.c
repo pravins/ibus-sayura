@@ -34,32 +34,14 @@ ibus_disconnected_cb (IBusBus  *bus,
 static void
 start_component (void)
 {
-    IBusComponent *component;
-
     ibus_init ();
 
     bus = ibus_bus_new ();
+    g_object_ref_sink (bus);
     g_signal_connect (bus, "disconnected", G_CALLBACK (ibus_disconnected_cb), NULL);
 
-    component = ibus_component_new ("org.freedesktop.IBus.Sinhala",
-                                    N_("Sinhala input method"),
-                                    "0.1.0",
-                                    "GPL",
-                                    "Pravin Satpute <pravin.d.s@gmail.com>",
-                                    "http://code.google.com/p/ibus/",
-                                    "",
-                                    "ibus-sayura");
-    ibus_component_add_engine (component,
-                               ibus_engine_desc_new ("sayura",
-                                                     N_("Sinhala Input Method"),
-                                                     N_("Sinhala Input Method"),
-                                                     "si",
-                                                     "GPL",
-                                                     "Pravin Satpute <pravin.d.s@gmail.com>",
-                                                     PKGDATADIR"/icon/ibus-sayura.png",
-                                                     "us"));
-
     factory = ibus_factory_new (ibus_bus_get_connection (bus));
+    g_object_ref_sink (factory);
 
     ibus_factory_add_engine (factory, "sayura", IBUS_TYPE_SINHALA_ENGINE);
 
@@ -67,10 +49,26 @@ start_component (void)
         ibus_bus_request_name (bus, "org.freedesktop.IBus.Sinhala", 0);
     }
     else {
+        IBusComponent *component;
+        component = ibus_component_new ("org.freedesktop.IBus.Sinhala",
+                                        N_("Sinhala input method"),
+                                        "0.1.0",
+                                        "GPL",
+                                        "Pravin Satpute <pravin.d.s@gmail.com>",
+                                        "https://fedorahosted.org/ibus-sayura/",
+                                        "",
+                                        "ibus-sayura");
+        ibus_component_add_engine (component,
+                                   ibus_engine_desc_new ("sayura",
+                                                         N_("Sinhala Input Method"),
+                                                         N_("Sinhala Input Method"),
+                                                         "si",
+                                                         "GPL",
+                                                         "Pravin Satpute <pravin.d.s@gmail.com>",
+                                                         PKGDATADIR"/icon/ibus-sayura.png",
+                                                         "us"));
         ibus_bus_register_component (bus, component);
     }
-
-    g_object_unref (component);
 
     ibus_main ();
 }
