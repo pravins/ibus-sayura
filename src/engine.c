@@ -23,9 +23,9 @@ struct _IBusSinhalaEngineClass {
 };
 
 struct {
-	gunichar character;
-	gunichar mahaprana;
-	gunichar sagngnaka;
+	gint character;
+	gint mahaprana;
+	gint sagngnaka;
 	int key;
 } consonents[] = {
 	{0xda4, 0x00, 0x00, IBUS_z},
@@ -72,10 +72,10 @@ struct {
 };
 
 struct {
-	gunichar single0;
-	gunichar double0;
-	gunichar single1;
-	gunichar double1;
+	gint single0;
+	gint double0;
+	gint single1;
+	gint double1;
 	int key;
 } vowels[] = {
 	{0xd85, 0xd86, 0xdcf, 0xdcf, IBUS_a},
@@ -207,7 +207,7 @@ ibus_sinhala_engine_init (IBusSinhalaEngine *sinhala)
     sinhala->prop_list = ibus_prop_list_new ();
     g_object_ref_sink (sinhala->prop_list);
     ibus_prop_list_append (sinhala->prop_list,  sinhala->sinhala_mode_prop);
-    sinhala->buffer = g_array_new (TRUE, TRUE, sizeof(gunichar *));
+    sinhala->buffer = g_array_new (TRUE, TRUE, sizeof(gint));
 }
 
 static GObject*
