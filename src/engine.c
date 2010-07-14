@@ -310,7 +310,7 @@ ibus_sinhala_engine_process_key_event (IBusEngine     *engine,
     if (c >= 0) /* a consonent is pressed. */
         return ibus_sinhala_handle_vowel_pressed (sinhala, keyval, c);
 
-    if (keyval == IBUS_Shift_L || keyval == IBUS_Shift_L ) {
+    if (keyval == IBUS_Shift_L || keyval == IBUS_Shift_R ) {
         return FALSE;
     }
 

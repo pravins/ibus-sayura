@@ -44,11 +44,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ibus/component/*
 
 %changelog
-* Tue Feb 09 2010 Pravin Satpute <pravin.d.s@gmail.com> - @VERSION@-1
+* Wed Jul 14 2010 Pravin Satpute <psatpute@redhat.com> - @VERSION@-1
+- fixed crash on 64 bit platform
+- fixed right shift key issue
+
+* Tue Feb 09 2010 Pravin Satpute <psatpute@redhat.com> - @VERSION@-1
 - updated patches for code enhancements from phuang for ibus-1.2.99
 
-* Thu Mar 26 2009 Pravin Satpute <pravin.d.s@gmail.com> - @VERSON@-2
+* Thu Mar 26 2009 Pravin Satpute <psatpute@redhat.com> - @VERSON@-2
 - updated as per fedora spec review
 
-* Fri Mar 20 2009 Pravin Satpute <pravin.d.s@gmail.com> - @VERSION@-1
+* Fri Mar 20 2009 Pravin Satpute <psatpute@redhat.com> - @VERSION@-1
 - The first version.
