@@ -44,7 +44,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ibus/component/*
 
 %changelog
-* Wed Jul 14 2010 Pravin Satpute <psatpute@redhat.com> - @VERSION@-1
+* Fri Jul 16 2010 Pravin Satpute <psatpute@redhat.com> - @VERSION@-1
 - fixed crash on 64 bit platform
 - fixed right shift key issue
 
